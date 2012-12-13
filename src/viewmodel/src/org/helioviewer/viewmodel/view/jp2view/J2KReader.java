@@ -3,6 +3,9 @@ package org.helioviewer.viewmodel.view.jp2view;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.net.SocketException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import org.helioviewer.base.logging.Log;
 import org.helioviewer.base.math.Interval;
@@ -78,7 +81,7 @@ class J2KReader implements Runnable   {
      * must update the bandwidth on the server.
      * Valuable between 0 and 1.
      * */
-    private static final double BW_PERCENT = 0.25;    
+    //private static final double BW_PERCENT = 0.25;    
 
     /**
      * The estimated, last and average bandwidth.
@@ -88,6 +91,9 @@ class J2KReader implements Runnable   {
     private double bw = -1;    
     private double bw_last = -1;    
     private double bw_avg = -1;
+    private double bw_error = 0;
+    private double bw_error_over_estimated = 0;
+    private double bw_error_low_estimated = 0;
     
     /** The time when the last response was received. */
     private long time_initial;    
@@ -101,7 +107,7 @@ class J2KReader implements Runnable   {
     private int prevCompositionLayer = -1;
     private int currFps = J2KRender.getMovieSpeed();
     private int prevFps;    
-    
+   
     /**
      * The constructor. Creates and connects the socket if image is remote.
      * 
@@ -188,7 +194,7 @@ class J2KReader implements Runnable   {
     }
 
     /** Calculate the estimated bandwidth between client and server **/
-    private boolean mbwControl(long size)
+    private boolean mbwControl(long size, String cid)
     {
     	boolean notify = false;
     	
@@ -199,7 +205,7 @@ class J2KReader implements Runnable   {
     	
     	// Increment the size of the response
     	responseSize += (size * 8);  	
-    	
+    	  	
     	if (time >= 1.0) {
     		// Calculate the actual bandwidth
     		bw = (double)responseSize / time;
@@ -207,34 +213,82 @@ class J2KReader implements Runnable   {
     		/****/
     		// Calculate the average bandwidth
     		//bw_avg = (bw_last != -1)? (bw + bw_last) / 2.0 : bw;
-   		
     		// TEST 
-    		bw_avg = (bw_last != -1)? ((0.75*bw) + (0.25*bw_last)): bw;
+    		System.out.format("\n[" + cid +  "] bw: %10.4f KB/s \tbw_last: %10.4f KB/s\n", ((bw/8)/1024), ((bw_last/8)/1024));
     		
-    		if ((MoviePanel.view != null) && (MoviePanel.view.getMaximumAccessibleFrameNumber()<MoviePanel.view.getMaximumFrameNumber())){
+    		bw_avg = (bw_last != -1)? ((0.1*bw) + (0.9*bw_last)): bw;
+    		    		
+    		bw_error = (bw_error != 0)? (bw_error + (Math.abs(bw - bw_avg)/Math.max(bw, bw_avg)))/2:Math.abs(bw - bw_avg)/Math.max(bw, bw_avg);
+    		
+    		if (bw > bw_avg){
+    			bw_error_over_estimated = (bw_error_over_estimated != 0)? (bw_error_over_estimated + (Math.abs(bw - bw_avg)/bw))/2:Math.abs(bw - bw_avg)/bw;
+    		}
+    		
+    		if (bw_avg > bw){
+    			bw_error_low_estimated = (bw_error_low_estimated != 0)? (bw_error_low_estimated + (Math.abs(bw_avg - bw)/bw_avg))/2:Math.abs(bw_avg - bw)/bw_avg;
+    		}
+    		
+    		System.out.println("\n[" + cid +  "] bw_error_over_estimated: " + bw_error_over_estimated);
+    		System.out.println("[" + cid +  "] bw_error_low_estimated: " + bw_error_low_estimated);
+    		
+    		System.out.format("\n[" + cid +  "] bw: %10.4f KB/s \tbw_avg: %10.4f KB/s \tbw_error: %10.4f %%", ((bw/8)/1024), ((bw_avg/8)/1024), bw_error);
+            // Update the last bandwidth
+            bw_last = (bw_last != -1)? (bw_last + bw_avg)/2: bw_avg;
+    		
+    		//if (!MoviePanel.isPlaying) return false;
+   		
+       		double setpoint = (((MoviePanel.maximumAccessibleFrameNumberInitial + 1) - MoviePanel.currentFrameNumberInitial))/Double.valueOf(MoviePanel.speedSpinner.getValue().toString());
+       		
+    		//if ((MoviePanel.view != null) && (MoviePanel.view.getMaximumAccessibleFrameNumber()<MoviePanel.view.getMaximumFrameNumber())){
+    		if ((MoviePanel.view != null) && (MoviePanel.isPlaying) && (MoviePanel.view.getMaximumAccessibleFrameNumber()<MoviePanel.view.getMaximumFrameNumber())){    			
         		
-    			System.out.println("\nCurrentFrameNumber: " + MoviePanel.view.getCurrentFrameNumber() + "\tMaximumAccessibleFrameNumber: " + (MoviePanel.view.getMaximumAccessibleFrameNumber()+1));
-    			System.out.println("Difference between frames: " + ((MoviePanel.view.getMaximumAccessibleFrameNumber()+1) - MoviePanel.view.getCurrentFrameNumber()));
+    			System.out.println("\n[" + cid +  "] CurrentFrameNumber: " + MoviePanel.view.getCurrentFrameNumber());
+    			System.out.println("[" + cid +  "] MaximumAccessibleFrameNumber: " + (MoviePanel.view.getMaximumAccessibleFrameNumber()+1));
+    			System.out.println("[" + cid +  "] Difference between frames: " + ((MoviePanel.view.getMaximumAccessibleFrameNumber()+1) - MoviePanel.view.getCurrentFrameNumber()));
     			
-        		double x = ((MoviePanel.view.getMaximumAccessibleFrameNumber()+1) - MoviePanel.view.getCurrentFrameNumber())/Double.valueOf(MoviePanel.speedSpinner.getValue().toString());
-        		System.out.println("x: " + x);
+        		double measured_value = ((MoviePanel.view.getMaximumAccessibleFrameNumber()+1) - MoviePanel.view.getCurrentFrameNumber())/Double.valueOf(MoviePanel.speedSpinner.getValue().toString());
+           		System.out.println("[" + cid +  "] Setpoint: " + setpoint);
+        		System.out.println("[" + cid +  "] Measured Value: " + measured_value);           		
+        		System.out.flush();       		
         		
-        		if ( x <= 5 ){
-        			if ( (x > 1) && (x <= 2)){ x = x - 1; }        			
-        			if ( (x > 2) && (x <= 3)){ x = x - 2; }
-        			if ( (x > 3) && (x <= 4)){ x = x - 3; }
-        			if ( (x > 4) && (x <= 5)){ x = x - 4; }
+        		// Método TCP
+        		if (measured_value < setpoint) {
+        			System.out.println("1. KB/s: " + ((bw_avg/8)/1024));
         			
-        			System.out.println("\tbw_avg: " + bw_avg);            		
+        			/*
+        			double current_distance = setpoint - measured_value;
+        			//double factor_corrector = (current_distance*bw_error_over_estimated)/setpoint;
+        			double factor_corrector = (current_distance*bw_error_low_estimated)/setpoint;
         			
-            		bw_avg = (x == 0)? bw_avg * (0.05): bw_avg * x;
+        			if (factor_corrector >= 100) factor_corrector = 0.99;        			
         			
-            		System.out.println("\tbw_avg (new): " + bw_avg);
+        			System.out.format("[" + cid +  "] current_distance: %10.4f \tfactor_corrector: %10.4f ", current_distance, factor_corrector); 
+        			System.out.format("\n[" + cid +  "] error + factor_corrector: %10.4f\n", bw_error_low_estimated + factor_corrector);
+					*/
+
+        			//bw_avg = bw_avg - bw_avg*(bw_error_over_estimated);
+        			bw_avg = bw_avg - bw_avg*(bw_error_low_estimated);
+        			//bw_avg = bw_avg - bw_avg*(bw_error_low_estimated + factor_corrector);
+        			        			
+        			System.out.println("[" + cid +  "] [measured_value < setpoint] New bw_avg: " + bw_avg);
+        			System.out.println("[" + cid +  "] 2. KB/s: " + ((bw_avg/8)/1024));
+        		}
+        		
+        		if (measured_value > setpoint){
+        			System.out.println("[" + cid +  "] 1. KB/s: " + ((bw_avg/8)/1024));
+        			
+        			//bw_avg = bw_avg + bw_avg*(bw_error_low_estimated);
+        			bw_avg = bw_avg + bw_avg*(bw_error_over_estimated);
+        			
+        			System.out.println("[" + cid +  "] [measured_value > setpoint] New bw_avg: " + bw_avg);
+        			System.out.println("[" + cid +  "] 2. KB/s: " + ((bw_avg/8)/1024));
         		}
     		}
     		/****/
-
-            System.out.format("\n\t\t[bandwidth] Size: %10d bits \t Time: %10.4f seg.\t bw: %10s. \t bw_last: %10s. \t bw_avg: %10s.\n", responseSize, time, mbwUnit(bw), mbwUnit(bw_last), mbwUnit(bw_avg));
+    		
+    		System.out.format("\n[" + cid +  "][bandwidth] Size: %10d bits \t Time: %10.4f seg.\t bw: %10s.\n", responseSize, time, mbwUnit(bw));
+    		//System.out.format("[" + cid +  "][bandwidth] Size: %10d bits \t Time: %10.4f seg.\t bw: %10s. \t bw_last: %10s. \t bw_avg: %10s.\n", responseSize, time, mbwUnit(bw), mbwUnit(bw_last), mbwUnit(bw_avg));
+            System.out.flush();
             
     		/****/
             // TEST
@@ -242,7 +296,7 @@ class J2KReader implements Runnable   {
                 notify = true;
                 
                 // Update the last bandwidth
-                bw_last = bw_avg;
+                //bw_last = bw_avg;
             //}
         	/****/
             
@@ -252,7 +306,21 @@ class J2KReader implements Runnable   {
             // Update the initial time
             time_initial = time_end;
     	}
+    	
+		if ((!MoviePanel.isPlaying) && (MoviePanel.view != null)) {
+    		System.out.println("[" + cid +  "] MaximumAccesibleFrameNumber: " + MoviePanel.view.getMaximumAccessibleFrameNumber());
+    		return false;    			
+		}
+    	
     	return notify;
+    }
+    
+    public void printTimeStamp(String message){
+		long now = System.currentTimeMillis();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(now);
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+        System.out.println(formatter.format(calendar.getTime()) + " [" + message + "]");
     }
     
     /** Calculate the unit of the bandwidth */
@@ -338,11 +406,21 @@ class J2KReader implements Runnable   {
     	*/
     	/****/
         
+        /****/
+        // TEST
+        /*
         if (parentViewRef.isMainView) {
             query = createQuery(currParams, curLayer, endLayer, parentViewRef.getRender().getMovieMode());	
         } else {
         	query = createQuery(currParams, curLayer, curLayer, parentViewRef.getRender().getMovieMode());
+        } 
+        */    
+        if (parentViewRef.isMainView) {
+            query = createQuery(currParams, curLayer, endLayer, true);	
+        } else {
+        	query = createQuery(currParams, curLayer, curLayer, false);
         }        
+        /****/
                                                    		
         req.setQuery(query.toString());
         socket.send(req);
@@ -481,20 +559,29 @@ class J2KReader implements Runnable   {
                             res = socket.receiveHeader();
                             JPIPDataInputStream jpip;
                             jpip = socket.receiveJPIPDataStream();                                
-                            JPIPDataSegment seg;                                                        
-                                                   
+                            JPIPDataSegment seg;                                                   
+                            
                             complete = false;                        
                             time_initial = System.currentTimeMillis();
                             
                             // Receive response     
                             while ((seg=jpip.readSegment())!= null && !stop) {
-                                time_end = System.currentTimeMillis();                                	
-                                res.addJpipDataSegment(seg);                                
-
+                                time_end = System.currentTimeMillis();
+                                res.addJpipDataSegment(seg);
+                                
                                 if (res != null) {
                                 	
                                 	// Calculate estimated bandwidth
-                                	boolean notify = mbwControl(res.getResponseSize());                                		
+                                	//boolean notify = mbwControl(res.getResponseSize());                                		
+                                	
+                                	/****/
+                                	// TEST
+                                	boolean notify = false;
+                                	if (parentViewRef.isMainView){
+                                        //printTimeStamp(String.valueOf(res.getResponseSize()));
+                                		notify = mbwControl(res.getResponseSize(), socket.getJpipChannelID());
+                                	}
+                                	/****/
                                 	
                             		/****/
                                 	// TEST
@@ -502,7 +589,8 @@ class J2KReader implements Runnable   {
                                 	//if (parentViewRef.isMainView && parentViewRef.getRender().getMovieMode() && notify) {
                                 	
                                 	// Always notify the new mbw
-                                	if (notify) {
+                                	//if (notify && bw_avg!=-1 && parentViewRef.getRender().getMovieMode()) {
+                                	if (notify && bw_avg!=-1) {                                		
                                 		sendUpdatedQuery();
                                 		pending++;
                                 		printForDebug("\t\t[J2KReader][CID: " + socket.getJpipChannelID() + "]  2 Updated Query. isMainView: " + parentViewRef.isMainView + ". Mode: " + parentViewRef.getRender().getMovieMode());

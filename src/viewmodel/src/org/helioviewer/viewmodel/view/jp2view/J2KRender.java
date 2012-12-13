@@ -337,8 +337,11 @@ class J2KRender implements Runnable {
         long tfrm, tmax = 0;
         long tnow, tini = System.currentTimeMillis();      
         
+        // TEST
         // Initialize the frame-rate
-        movieSpeed = 20;
+        //movieSpeed = 20;
+        movieSpeed = 5;
+        //***
         
         while (!stop) {       	
         	
@@ -391,9 +394,9 @@ class J2KRender implements Runnable {
                 		/****/
                         // TEST
                     	//if (movieMode) {
-                    		//Benchmark b = new Benchmark();
-                    		//b.setParameters(byteBuffer, currParams.subImage.x, currParams.subImage.y, width, height, curLayer, "/tmp/soc/");
-                    		//b.writeToDisk(0, 0, 1024, 1024);                    		
+                    		Benchmark b = new Benchmark();
+                    		b.setParameters(byteBuffer, currParams.subImage.x, currParams.subImage.y, width, height, curLayer, "/tmp/soc/");
+                    		b.writeToDisk(0, 0, 1024, 1024);                    		
                     	//}
                         /****/                		
                 		

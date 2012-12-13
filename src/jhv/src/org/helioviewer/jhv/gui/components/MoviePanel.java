@@ -130,7 +130,11 @@ public class MoviePanel extends JPanel implements ActionListener, ChangeListener
 
     // Status
     private static boolean isAdvanced = false;
-    private boolean isPlaying = false;
+    /****/
+    // TEST
+    //private boolean isPlaying = false;
+    public static boolean isPlaying = false;
+    /****/
     private boolean isDragging = false;
 
     // Gui elements
@@ -144,6 +148,8 @@ public class MoviePanel extends JPanel implements ActionListener, ChangeListener
     // TEST
     //private JSpinner speedSpinner;
     public static JSpinner speedSpinner;
+    public static int currentFrameNumberInitial;
+    public static int maximumAccessibleFrameNumberInitial;    
     /****/    
     private JComboBox speedUnitComboBox;
     private JComboBox animationModeComboBox;
@@ -273,12 +279,15 @@ public class MoviePanel extends JPanel implements ActionListener, ChangeListener
         speedPanel.add(new JSeparator(SwingConstants.VERTICAL), BorderLayout.PAGE_START);
         speedPanel.add(new JLabel("Speed:     "), BorderLayout.WEST);
 
-        speedSpinner = new JSpinner(new SpinnerNumberModel(20, 1, 99, 1));
+        // TEST
+        //speedSpinner = new JSpinner(new SpinnerNumberModel(20, 1, 99, 1));
+        speedSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 99, 1));
+        //***
         speedSpinner.addChangeListener(this);        
         ((JSpinner.DefaultEditor) speedSpinner.getEditor()).getTextField().addActionListener(this);
         speedSpinner.setMaximumSize(speedSpinner.getPreferredSize());
         speedPanel.add(speedSpinner, BorderLayout.CENTER);
-
+        
         SpeedUnit[] units = { SpeedUnit.FRAMESPERSECOND };
         speedUnitComboBox = new JComboBox(units);
 
@@ -380,7 +389,7 @@ public class MoviePanel extends JPanel implements ActionListener, ChangeListener
     }
 
     public void setPlaying(boolean playing, boolean onlyGUI) {
-
+   	
         isPlaying = playing;
 
         if (!isPlaying) {
@@ -396,6 +405,16 @@ public class MoviePanel extends JPanel implements ActionListener, ChangeListener
             if (!onlyGUI) {
                 view.playMovie();
             }
+            
+            /****/
+            // TEST
+            currentFrameNumberInitial = view.getCurrentFrameNumber();
+            maximumAccessibleFrameNumberInitial = view.getMaximumAccessibleFrameNumber();
+            System.out.println("********************************************************");
+            System.out.println("currentFrameNumberInitial: " + currentFrameNumberInitial);
+            System.out.println("maximumAccessibleFrameNumberInitial: " + maximumAccessibleFrameNumberInitial);
+            System.out.println("********************************************************");
+            /****/
         }
 
     }
