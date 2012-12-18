@@ -111,18 +111,19 @@ public class KakaduUtils {
 
         try {
             do {
-                _socket.send(req);
+                System.out.println("[downloadInitialData]");
+            	_socket.send(req);
                 if ((res = _socket.receive()) == null)
                     break;
-            } while (!_cache.addJPIPResponseData(res));            
-
+            } while (!_cache.addJPIPResponseData(res));
+            
             if (!_cache.isDataBinCompleted(JPIPDatabinClass.MAIN_HEADER_DATABIN, 0, 0)) {
-                req.setQuery(new JPIPQuery("stream", "0"));
+            	req.setQuery(new JPIPQuery("stream", "0"));
 
-                do {
+            	do {
                     _socket.send(req);
                     if ((res = _socket.receive()) == null)
-                        break;
+                        break;                   
                 } while (!_cache.addJPIPResponseData(res) && !_cache.isDataBinCompleted(JPIPDatabinClass.MAIN_HEADER_DATABIN, 0, 0));         
             }
         } catch (EOFException e) {

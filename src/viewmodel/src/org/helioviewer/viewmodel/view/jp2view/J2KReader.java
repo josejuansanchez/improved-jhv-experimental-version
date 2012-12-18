@@ -45,7 +45,7 @@ import org.helioviewer.jhv.gui.components.MoviePanel;
  * @author Juan Pablo
  * @author Markus Langenberg
  */
-class J2KReader implements Runnable   {
+public class J2KReader implements Runnable   {
     /**
      * There could be multiple reason that the Reader object was signaled. This
      * enum lists them.
@@ -89,7 +89,8 @@ class J2KReader implements Runnable   {
      * valid value to take into account.
      */   
     private double bw = -1;    
-    private double bw_last = -1;    
+    //private double bw_last = -1;    
+    public static double bw_last = -1;
     private double bw_avg = -1;
     private double bw_error = 0;
     private double bw_error_over_estimated = 0;
@@ -197,7 +198,7 @@ class J2KReader implements Runnable   {
     private boolean mbwControl(long size, String cid)
     {
     	boolean notify = false;
-    	
+
     	if (size <= 0) return false;
     	
     	// Calculate the elapsed time
@@ -206,17 +207,19 @@ class J2KReader implements Runnable   {
     	// Increment the size of the response
     	responseSize += (size * 8);  	
     	  	
-    	if (time >= 1.0) {
+    	if (time >= 0.1) {
     		// Calculate the actual bandwidth
     		bw = (double)responseSize / time;
-
+    		
     		/****/
     		// Calculate the average bandwidth
     		//bw_avg = (bw_last != -1)? (bw + bw_last) / 2.0 : bw;
-    		// TEST 
+    		// TEST    		
     		System.out.format("\n[" + cid +  "] bw: %10.4f KB/s \tbw_last: %10.4f KB/s\n", ((bw/8)/1024), ((bw_last/8)/1024));
+    		System.out.println("bw: " + bw);
+    		System.out.println("bw_last: " + bw_last);
     		
-    		bw_avg = (bw_last != -1)? ((0.1*bw) + (0.9*bw_last)): bw;
+    		bw_avg = (bw_last != -1)? ((0.1*bw) + (0.9*bw_last)): bw;    		
     		    		
     		bw_error = (bw_error != 0)? (bw_error + (Math.abs(bw - bw_avg)/Math.max(bw, bw_avg)))/2:Math.abs(bw - bw_avg)/Math.max(bw, bw_avg);
     		
@@ -253,23 +256,27 @@ class J2KReader implements Runnable   {
         		
         		// Método TCP
         		if (measured_value < setpoint) {
-        			System.out.println("1. KB/s: " + ((bw_avg/8)/1024));
-        			
-        			/*
-        			double current_distance = setpoint - measured_value;
-        			//double factor_corrector = (current_distance*bw_error_over_estimated)/setpoint;
-        			double factor_corrector = (current_distance*bw_error_low_estimated)/setpoint;
-        			
-        			if (factor_corrector >= 100) factor_corrector = 0.99;        			
-        			
-        			System.out.format("[" + cid +  "] current_distance: %10.4f \tfactor_corrector: %10.4f ", current_distance, factor_corrector); 
-        			System.out.format("\n[" + cid +  "] error + factor_corrector: %10.4f\n", bw_error_low_estimated + factor_corrector);
-					*/
+        			System.out.println("1. KB/s: " + ((bw_avg/8)/1024));        			
 
-        			//bw_avg = bw_avg - bw_avg*(bw_error_over_estimated);
-        			bw_avg = bw_avg - bw_avg*(bw_error_low_estimated);
-        			//bw_avg = bw_avg - bw_avg*(bw_error_low_estimated + factor_corrector);
-        			        			
+        			double x1 = 0;
+            		double y1 = 0.99;
+            		double x2 = setpoint;
+            		double y2 = 0.01;
+            		
+            		double factor_corrector = ((y1-y2)/(x1-x2))*measured_value + y1 - ((y1-y2)/(x1-x2)*x1); 
+        			System.out.println("[" + cid +  "] factor_corrector: " + factor_corrector);
+        			
+        			if (bw_error > 0){
+        				
+        				//bw_avg = bw_avg - bw_avg*(bw_error);        			
+        				bw_avg = bw_avg - bw_avg*(factor_corrector); 
+        				
+        				//bw_avg = bw_avg - bw_avg*(bw_error);
+        				//bw_avg = bw_avg - bw_avg*(bw_error / factor_corrector);
+        				//bw_avg = bw_avg - bw_avg*(bw_error_over_estimated);
+        				//bw_avg = bw_avg - bw_avg*(bw_error_low_estimated);
+        				//bw_avg = bw_avg - bw_avg*(bw_error_low_estimated + factor_corrector);        				
+        			}
         			System.out.println("[" + cid +  "] [measured_value < setpoint] New bw_avg: " + bw_avg);
         			System.out.println("[" + cid +  "] 2. KB/s: " + ((bw_avg/8)/1024));
         		}
@@ -277,8 +284,11 @@ class J2KReader implements Runnable   {
         		if (measured_value > setpoint){
         			System.out.println("[" + cid +  "] 1. KB/s: " + ((bw_avg/8)/1024));
         			
-        			//bw_avg = bw_avg + bw_avg*(bw_error_low_estimated);
-        			bw_avg = bw_avg + bw_avg*(bw_error_over_estimated);
+        			if (bw_error > 0){
+        				bw_avg = bw_avg + bw_avg*(bw_error);
+        				//bw_avg = bw_avg + bw_avg*(bw_error_low_estimated);
+        				//bw_avg = bw_avg + bw_avg*(bw_error_over_estimated);
+        			}
         			
         			System.out.println("[" + cid +  "] [measured_value > setpoint] New bw_avg: " + bw_avg);
         			System.out.println("[" + cid +  "] 2. KB/s: " + ((bw_avg/8)/1024));

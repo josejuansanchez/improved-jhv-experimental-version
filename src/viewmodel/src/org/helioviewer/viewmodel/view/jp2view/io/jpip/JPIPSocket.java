@@ -11,6 +11,8 @@ import org.helioviewer.viewmodel.view.jp2view.io.http.HTTPResponse;
 import org.helioviewer.viewmodel.view.jp2view.io.http.HTTPSocket;
 import org.helioviewer.viewmodel.view.jp2view.io.http.HTTPRequest.Method;
 
+import org.helioviewer.viewmodel.view.jp2view.J2KReader;
+
 /**
  * Assumes a persistent HTTP connection.
  * 
@@ -185,7 +187,7 @@ public class JPIPSocket extends HTTPSocket {
 
     /** Receives a JPIPResponse returning null if EOS reached */
     public JPIPResponse receive() throws IOException {
-        // long tini = System.currentTimeMillis();
+        //long tini = System.currentTimeMillis();
 
         HTTPResponse httpRes = (HTTPResponse) super.receive();
         if (httpRes == null)
@@ -214,8 +216,19 @@ public class JPIPSocket extends HTTPSocket {
         replyDataTm = System.currentTimeMillis();
         receivedData = input.getTotalLength();
 
-        //System.out.format("Bandwidth: %.2f KB/seg.\n", (double)(receivedData * 1.0) / (double)(replyDataTm - tini));        
-        //System.out.format("Bandwidth: %.2f KB/seg.\n", (double)(receivedData * 1.0) / (double)(replyDataTm - replyTextTm));
+        if (receivedData > 0){
+            System.out.println("[receive] receivedData: " + receivedData);
+            System.out.println("[receive] replyDataTm: " + replyDataTm);
+            System.out.println("[receive] replyTextTm: " + replyTextTm);
+                  
+            // In bits/seconds
+            System.out.format("[receive] Bandwidth: %.2f bits/seg.\n", (double)(receivedData * 8.0) / (double)((replyDataTm - replyTextTm)/1000.0));
+            // In KB/seconds
+            System.out.format("[receive] Bandwidth: %.2f bits/seg.\n", (((double)(receivedData * 8.0) / (double)((replyDataTm - replyTextTm)/1000.0)/8)/1024));            
+            
+            // In bits/seconds
+            J2KReader.bw_last = (double)(receivedData * 8.0) / (double)((replyDataTm - replyTextTm)/1000.0);
+        }
 
         return res;
     }
