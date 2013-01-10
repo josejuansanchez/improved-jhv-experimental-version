@@ -124,22 +124,20 @@ public abstract class StandardViewFactory implements ViewFactory {
         } else if (source instanceof ImageInfoView) {
 
         	if (source instanceof JHVJPXView) {
-                JHVJPXView sourceJPX = (JHVJPXView) source;
+        		JHVJPXView sourceJPX = (JHVJPXView) source;
                 JHVJPXView newJPX = new JHVJPXView(false);
 
                 newJPX.setJP2Image(sourceJPX.getJP2Image());
 
                 return (T) newJPX;
-
             }
             if (source instanceof JHVJP2View) {
-                JHVJP2View sourceJP2 = (JHVJP2View) source;
+            	JHVJP2View sourceJP2 = (JHVJP2View) source;
                 JHVJP2View newJP2 = new JHVJP2View(false);
 
                 newJP2.setJP2Image(sourceJP2.getJP2Image());
 
                 return (T) newJP2;
-
             } else if (source instanceof JHVFITSView) {
                 JHVFITSView sourceFITS = (JHVFITSView) source;
                 JHVFITSView newFITS = new JHVFITSView(sourceFITS.getFITSImage(), sourceFITS.getUri());

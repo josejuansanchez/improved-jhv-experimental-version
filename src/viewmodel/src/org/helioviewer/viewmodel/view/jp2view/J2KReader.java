@@ -207,7 +207,8 @@ public class J2KReader implements Runnable   {
     	// Increment the size of the response
     	responseSize += (size * 8);  	
     	  	
-    	if (time >= 0.1) {
+    	//if (time >= 0.1) {
+        if (time >= 1.0) {    		
     		// Calculate the actual bandwidth
     		bw = (double)responseSize / time;
     		
@@ -259,7 +260,8 @@ public class J2KReader implements Runnable   {
         			System.out.println("1. KB/s: " + ((bw_avg/8)/1024));        			
 
         			double x1 = 0;
-            		double y1 = 0.99;
+            		//double y1 = 0.99;
+            		double y1 = 0.50;
             		double x2 = setpoint;
             		double y2 = 0.01;
             		

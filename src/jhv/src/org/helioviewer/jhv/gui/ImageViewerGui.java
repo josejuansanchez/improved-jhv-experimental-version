@@ -30,7 +30,7 @@ import org.helioviewer.jhv.gui.components.ImageSelectorPanel;
 import org.helioviewer.jhv.gui.components.MainImagePanel;
 import org.helioviewer.jhv.gui.components.MenuBar;
 import org.helioviewer.jhv.gui.components.MoviePanel;
-import org.helioviewer.jhv.gui.components.OverviewImagePanel;
+//import org.helioviewer.jhv.gui.components.OverviewImagePanel;
 import org.helioviewer.jhv.gui.components.QualitySpinner;
 import org.helioviewer.jhv.gui.components.SideContentPane;
 import org.helioviewer.jhv.gui.components.StatusPanel;
@@ -92,7 +92,8 @@ public class ImageViewerGui {
 
     private TopToolBar topToolBar;
     private MainImagePanel mainImagePanel;
-    private OverviewImagePanel overviewImagePanel;
+    // TEST
+    //private OverviewImagePanel overviewImagePanel;
     private SideContentPane leftPane;
     private RenderModeStatusPanel renderModeStatus;
     private ImageSelectorPanel imageSelectorPanel;
@@ -145,6 +146,8 @@ public class ImageViewerGui {
 
         leftPane = new SideContentPane();
 
+        // TEST
+        /*
         // create overview image panel instance
         overviewImagePanel = new OverviewImagePanel();
 
@@ -158,6 +161,7 @@ public class ImageViewerGui {
         overviewImagePanelContainer.add(overviewImagePanel);
 
         leftPane.add("Overview", overviewImagePanelContainer, true);
+		*/
 
         // Movie control
         moviePanelContainer = new ControlPanelContainer();
@@ -291,10 +295,13 @@ public class ImageViewerGui {
             ViewchainFactory overviewFactory = new ViewchainFactory(true);
             overviewComponentView = overviewFactory.createViewchainOverview(mainComponentView, overviewComponentView, false);
 
+            // TEST
+            /*
             // Connect Viewchain to GUI
             if (overviewComponentView != null) {
                 overviewImagePanel.setView(overviewComponentView);
             }
+            */
         } else {
             overviewComponentView.getAdapter(SynchronizeView.class).setObservedView(mainComponentView);
         }

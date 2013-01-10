@@ -93,7 +93,9 @@ public class SynchronizeOverviewChainView extends AbstractSynchronizeChainView {
      *            observed ChangedReason
      */
     private void layerChanged(LayerChangedReason aLayerChangedReason) {
+    	// TEST
     	/****/
+    	/*
     	if (aLayerChangedReason.getLayerChangeType() == LayerChangeType.LAYER_ADDED) {
             // add layer
 
@@ -136,6 +138,7 @@ public class SynchronizeOverviewChainView extends AbstractSynchronizeChainView {
                 }
             }
         }
+        */
     	/****/    	
     }
 

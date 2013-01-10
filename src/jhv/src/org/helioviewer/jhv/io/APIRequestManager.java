@@ -310,7 +310,7 @@ public class APIRequestManager {
         // Load new view and assign it to view chain of Main Image
 
         ImageInfoView view = ViewHelper.loadView(uri, downloadURI);        
-
+        
         if (addToViewChain) {
             ViewchainFactory factory = new ViewchainFactory();
             factory.addLayerToViewchainMain(view, ImageViewerGui.getSingletonInstance().getMainView());
