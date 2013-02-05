@@ -88,10 +88,16 @@ public class J2KReader implements Runnable   {
      * A negative value means that there is not a previous
      * valid value to take into account.
      */   
-    private double bw = -1;    
+    private double bw = -1;
+    //private double bw = 11772813; 
+    
     //private double bw_last = -1;    
     public static double bw_last = -1;
+    //public static double bw_last = 11772813;    
+    
     private double bw_avg = -1;
+    //private double bw_avg = 11772813;
+    
     private double bw_error = 0;
     private double bw_error_over_estimated = 0;
     private double bw_error_low_estimated = 0;

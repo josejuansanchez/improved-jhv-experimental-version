@@ -69,6 +69,5 @@ public class Benchmark {
             }catch (Exception e) {
                     System.out.println("Exception: " + e.toString());
             }
-    }  
-
+    }
 }

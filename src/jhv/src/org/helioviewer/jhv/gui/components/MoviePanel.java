@@ -281,7 +281,7 @@ public class MoviePanel extends JPanel implements ActionListener, ChangeListener
 
         // TEST
         //speedSpinner = new JSpinner(new SpinnerNumberModel(20, 1, 99, 1));
-        speedSpinner = new JSpinner(new SpinnerNumberModel(10, 1, 99, 1));
+        speedSpinner = new JSpinner(new SpinnerNumberModel(20, 1, 99, 1));
         //***
         speedSpinner.addChangeListener(this);        
         ((JSpinner.DefaultEditor) speedSpinner.getEditor()).getTextField().addActionListener(this);
