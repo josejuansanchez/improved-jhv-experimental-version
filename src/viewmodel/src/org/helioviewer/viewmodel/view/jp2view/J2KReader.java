@@ -88,15 +88,20 @@ public class J2KReader implements Runnable   {
      * A negative value means that there is not a previous
      * valid value to take into account.
      */   
-    private double bw = -1;
-    //private double bw = 11772813; 
+    //private double bw = -1;    
+    private double bw = 8333477; 				// Scenario 1 (IO)    
+    //private double bw = 11772813; 			// Scenario 1		
+    //private double bw = 1449850;				// Scenario 2
     
-    //private double bw_last = -1;    
-    public static double bw_last = -1;
-    //public static double bw_last = 11772813;    
+    //public static double bw_last = -1;
+    public static double bw_last = 8333477;  	// Scenario 1 (IO)   
+    //public static double bw_last = 11772813;  // Scenario 1  
+    //public static double bw_last = 1449850;  	// Scenario 2
     
-    private double bw_avg = -1;
-    //private double bw_avg = 11772813;
+    //private double bw_avg = -1;    
+    private double bw_avg = 8333477; 			// Scenario 1 (IO)
+    //private double bw_avg = 11772813; 		// Scenario 1   
+    //private double bw_avg = 1449850; 			// Scenario 2
     
     private double bw_error = 0;
     private double bw_error_over_estimated = 0;
@@ -370,7 +375,7 @@ public class J2KReader implements Runnable   {
     	// TEST
     	// The calculation not have been performed. (The above calculation imply loss of precision)
     	// The value is returned in bits.	
-    	return String.valueOf((long)bw_value);
+    	return String.valueOf((long)bw_value);   	
 		/****/
     }
     
