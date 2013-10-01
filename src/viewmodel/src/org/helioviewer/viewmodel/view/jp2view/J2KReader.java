@@ -88,21 +88,9 @@ public class J2KReader implements Runnable   {
      * A negative value means that there is not a previous
      * valid value to take into account.
      */   
-    //private double bw = -1;    
-    private double bw = 8333477; 				// Scenario 1 (IO)    
-    //private double bw = 11772813; 			// Scenario 1		
-    //private double bw = 1449850;				// Scenario 2
-    
-    //public static double bw_last = -1;
-    public static double bw_last = 8333477;  	// Scenario 1 (IO)   
-    //public static double bw_last = 11772813;  // Scenario 1  
-    //public static double bw_last = 1449850;  	// Scenario 2
-    
-    //private double bw_avg = -1;    
-    private double bw_avg = 8333477; 			// Scenario 1 (IO)
-    //private double bw_avg = 11772813; 		// Scenario 1   
-    //private double bw_avg = 1449850; 			// Scenario 2
-    
+    private double bw = -1;
+    public static double bw_last = -1;
+    private double bw_avg = -1;      
     private double bw_error = 0;
     private double bw_error_over_estimated = 0;
     private double bw_error_low_estimated = 0;
@@ -218,18 +206,14 @@ public class J2KReader implements Runnable   {
     	// Increment the size of the response
     	responseSize += (size * 8);  	
     	  	
-    	//if (time >= 0.1) {
         if (time >= 1.0) {    		
     		// Calculate the actual bandwidth
     		bw = (double)responseSize / time;
     		
-    		/****/
     		// Calculate the average bandwidth
-    		//bw_avg = (bw_last != -1)? (bw + bw_last) / 2.0 : bw;
-    		// TEST    		
-    		System.out.format("\n[" + cid +  "] bw: %10.4f KB/s \tbw_last: %10.4f KB/s\n", ((bw/8)/1024), ((bw_last/8)/1024));
-    		System.out.println("bw: " + bw);
-    		System.out.println("bw_last: " + bw_last);
+    		//System.out.format("\n[" + cid +  "] bw: %10.4f KB/s \tbw_last: %10.4f KB/s\n", ((bw/8)/1024), ((bw_last/8)/1024));
+    		//System.out.println("bw: " + bw);
+    		//System.out.println("bw_last: " + bw_last);
     		
     		bw_avg = (bw_last != -1)? ((0.1*bw) + (0.9*bw_last)): bw;    		
     		    		
@@ -271,7 +255,6 @@ public class J2KReader implements Runnable   {
         			System.out.println("1. KB/s: " + ((bw_avg/8)/1024));        			
 
         			double x1 = 0;
-            		//double y1 = 0.99;
             		double y1 = 0.50;
             		double x2 = setpoint;
             		double y2 = 0.01;
@@ -280,15 +263,7 @@ public class J2KReader implements Runnable   {
         			System.out.println("[" + cid +  "] factor_corrector: " + factor_corrector);
         			
         			if (bw_error > 0){
-        				
-        				//bw_avg = bw_avg - bw_avg*(bw_error);        			
         				bw_avg = bw_avg - bw_avg*(factor_corrector); 
-        				
-        				//bw_avg = bw_avg - bw_avg*(bw_error);
-        				//bw_avg = bw_avg - bw_avg*(bw_error / factor_corrector);
-        				//bw_avg = bw_avg - bw_avg*(bw_error_over_estimated);
-        				//bw_avg = bw_avg - bw_avg*(bw_error_low_estimated);
-        				//bw_avg = bw_avg - bw_avg*(bw_error_low_estimated + factor_corrector);        				
         			}
         			System.out.println("[" + cid +  "] [measured_value < setpoint] New bw_avg: " + bw_avg);
         			System.out.println("[" + cid +  "] 2. KB/s: " + ((bw_avg/8)/1024));
@@ -299,18 +274,14 @@ public class J2KReader implements Runnable   {
         			
         			if (bw_error > 0){
         				bw_avg = bw_avg + bw_avg*(bw_error);
-        				//bw_avg = bw_avg + bw_avg*(bw_error_low_estimated);
-        				//bw_avg = bw_avg + bw_avg*(bw_error_over_estimated);
         			}
         			
         			System.out.println("[" + cid +  "] [measured_value > setpoint] New bw_avg: " + bw_avg);
         			System.out.println("[" + cid +  "] 2. KB/s: " + ((bw_avg/8)/1024));
         		}
     		}
-    		/****/
     		
     		System.out.format("\n[" + cid +  "][bandwidth] Size: %10d bits \t Time: %10.4f seg.\t bw: %10s.\n", responseSize, time, mbwUnit(bw));
-    		//System.out.format("[" + cid +  "][bandwidth] Size: %10d bits \t Time: %10.4f seg.\t bw: %10s. \t bw_last: %10s. \t bw_avg: %10s.\n", responseSize, time, mbwUnit(bw), mbwUnit(bw_last), mbwUnit(bw_avg));
             System.out.flush();
             
     		/****/
@@ -349,7 +320,6 @@ public class J2KReader implements Runnable   {
     /** Calculate the unit of the bandwidth */
     private String mbwUnit(double bw_value)
     {
-		/****/
     	/*
     	String s;    	
 
@@ -372,11 +342,9 @@ public class J2KReader implements Runnable   {
     	return s;
     	*/
     	
-    	// TEST
     	// The calculation not have been performed. (The above calculation imply loss of precision)
     	// The value is returned in bits.	
     	return String.valueOf((long)bw_value);   	
-		/****/
     }
     
     /** Create a JPIP query */

@@ -217,8 +217,6 @@ class J2KRender implements Runnable {
 
     private void renderLayer(int numLayer) {    	
 
-    	// TEST
-    	//System.out.println("[J2KRender] renderLayer: [" + numLayer + "] lock --------------------");
     	parentImageRef.getLock().lock();
 
         try {
@@ -326,8 +324,6 @@ class J2KRender implements Runnable {
         } catch (KduException e) {        	
             e.printStackTrace();            
         } finally {
-            // TEST
-        	//System.out.println("[J2KRender] renderLayer: [" + numLayer + "]  lock ####################");
         	parentImageRef.getLock().unlock();
         }
     }
@@ -346,7 +342,6 @@ class J2KRender implements Runnable {
         // Initialize the frame-rate
         //movieSpeed = 20;
         movieSpeed = 5;
-        //***
         
         while (!stop) {       	
         	
@@ -399,10 +394,12 @@ class J2KRender implements Runnable {
                 		/****/
                         // TEST
                     	//if (movieMode) {
+                            /*
                     		Benchmark b = new Benchmark();
                     		b.setParameters(byteBuffer, currParams.subImage.x, currParams.subImage.y, width, height, curLayer, "/tmp/soc/");
                     		//b.writeToDisk(0, 0, 1024, 1024);                    		
                     		b.writeToDisk(0, 0, 1280, 720);
+                            */
                     	//}
                         /****/                		
                 		
